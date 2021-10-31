@@ -5,7 +5,8 @@ def buildAspnetCore () {
 }
 
 def testAspnetCore () {
-    echo "Testing"
+    sh ("./build.sh --target=Test")
+    echo "Done Test"
 }
 
 return this
