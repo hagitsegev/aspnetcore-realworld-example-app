@@ -1,0 +1,76 @@
+#!groovy
+// Pipeline build
+
+Map modules = [:]
+pipeline {
+    parameters {
+        string(name: 'TIMEOUT_PARAM', defaultValue: '1', description: 'Build timeout (Timeout in hours)')
+        string(name: 'REPO', defaultValue: 'https://github.com/hagitsegev/aspnetcore-realworld-example-app.git', description: 'Repo. Current default is Hagit, should be git@github.com:ziigithub/aspnetcore-realworld-example-app.git')
+        string(name: 'BRANCH', defaultValue: 'hagit-test', description: 'Branch. Current default is default: hagit-test, should be master')
+
+    }
+
+    agent {
+        label {
+            label "master"
+        }
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: env.TIMEOUT_PARAM, unit: 'HOURS')
+    }
+
+    stages {
+        stage ('Prepare') {
+            steps {
+                script {
+                    groovyPath = "jenkins-pipeline/groovy_modules"
+                    build = load "$groovyPath/build.groovy"
+                    git = load "$groovyPath/git.groovy"
+                    checkoutDir = "aspnetcore-realworld-example-app"
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                script {
+                    cleanWs()
+                    git.doCheckout(params.REPO, params.BRANCH, checkoutDir)
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    build.buildAspnetCore ()
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    build.testAspnetCore ()
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    echo "Deploy"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                echo "Done"
+            }
+        }
+    }
+}
