@@ -9,4 +9,9 @@ def testAspnetCore () {
     echo "Done Test"
 }
 
+def publishTestResults (String testsWildcardFiles) {
+    archiveArtifacts artifacts: "$testsWildcardFiles"
+    junit testsWildcardFiles
+}
+
 return this

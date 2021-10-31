@@ -17,10 +17,17 @@ Task("Test")
   .Does(() =>
 {
     var files = GetFiles("tests/**/*.csproj");
+    var settings = new DotNetCoreTestSettings
+    {
+        // Outputing test results as XML so that VSTS can pick it up
+        ArgumentCustomization = args => args.Append("--logger \"trx;LogFileName=TestResults.trx\"")
+    };
     foreach(var file in files)
     {
-        DotNetCoreTest(file.ToString());
+        DotNetCoreTest(file.ToString(), settings);
     }
+    XmlTransform("trx-to-junit.xslt", "tests/Conduit.IntegrationTests/TestResults/TestResults.trx", "tests/Conduit.IntegrationTests/TestResults/TestResults.xml",
+    new XmlTransformationSettings { Indent = true, Encoding = Encoding.Unicode});
 });
 
 Task("Publish")
@@ -34,7 +41,7 @@ Task("Publish")
         Runtime = "linux-x64",
         VersionSuffix = tag
     };
-                
+
     DotNetCorePublish("src/Conduit", settings);
 });
 

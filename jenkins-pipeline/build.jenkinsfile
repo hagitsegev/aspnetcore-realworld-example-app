@@ -29,6 +29,8 @@ pipeline {
                     build = load "$groovyPath/build.groovy"
                     git = load "$groovyPath/git.groovy"
                     checkoutDir = "aspnetcore-realworld-example-app"
+                    testFiled2Publish = "**/TestResults/*TestResults*.xml"
+                    testDone = false
                 }
             }
         }
@@ -53,6 +55,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
+                    testDone = true
                     build.testAspnetCore ()
                 }
             }
@@ -69,6 +72,9 @@ pipeline {
     post {
         always {
             script {
+                if (testDone) {
+                    build.publishTestResults (testFiled2Publish)
+                }
                 echo "Done"
             }
         }
